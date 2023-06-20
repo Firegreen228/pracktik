@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${pageTitle}">Default Title</title>
+    <meta name="keywords" th:content="${keywords}">
+</head>
+<body>
+<h1>Greetings!</h1>
+<h1>Search for Cases</h1>
+<form action="/search" method="post">
+    <label for="date">Enter Date:</label>
+    <input type="text" id="date" name="date" required>
+    <button type="submit">Search</button>
+</form>
+
+<h2>Search Results:</h2>
+<div id="results"></div>
+
+<script th:inline="javascript">
+    document.querySelector('form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+        var dateInput = document.getElementById('date');
+        var date = dateInput.value;
+
+        // Отправка AJAX-запроса на сервер
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/search');
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var data = JSON.parse(xhr.responseText);
+                displayResults(data, date); // Передача значения date в функцию displayResults
+            }
+        };
+        xhr.send('date=' + encodeURIComponent(date));
+    });
+
+    function displayResults(data, date) {
+        var resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+        if (data.length > 0) {
+            // Создание элемента списка ul
+            var ul = document.createElement('ul');
+            for (var i = 0; i < data.length; i++) {
+                // Создание элемента списка li
+                var li = document.createElement('li');
+                // Создание ссылки a
+                var a = document.createElement('a');
+                a.href = data[i]; // Установка ссылки на дело
+                a.textContent = data[i]; // Установка текста ссылки
+                li.appendChild(a); // Добавление ссылки в элемент списка li
+                ul.appendChild(li); // Добавление элемента списка li в список ul
+            }
+            resultsDiv.appendChild(ul); // Добавление списка ul в результаты поиска
+        } else {
+            // Если результаты не найдены
+            resultsDiv.innerHTML = "Received date from request: " + date + "<br>No results found.";
+        }
+    }
+
+</script>
+
+</body>
+</html>
